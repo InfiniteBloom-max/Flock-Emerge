@@ -8,3 +8,6 @@ A mesmerizing interactive simulation of flocking behavior with a thrilling preda
 - **Separation**: Boids avoid crowding neighbors
 - **Alignment**: Boids steer towards average heading of neighbors  
 - **Cohesion**: Boids steer towards average position of neighbors
+
+
+### Total Time Spent : 3 Hours
