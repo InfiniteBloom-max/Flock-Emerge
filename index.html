@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D Boids Flocking with Predator-Prey Dynamics</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 10px;
+        }
+        
+        .control-group label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .slider {
+            width: 150px;
+            height: 5px;
+            border-radius: 5px;
+            background: rgba(255,255,255,0.3);
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+        
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+        
+        .value-display {
+            margin-top: 5px;
+            font-size: 12px;
+            color: #ccc;
+        }
+        
+        .canvas-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .export-controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .export-btn {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+        
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐦 2D Boids Flocking with Predator-Prey Dynamics</h1>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="separationSlider">Separation</label>
+                <input type="range" id="separationSlider" class="slider" min="0" max="3" step="0.1" value="1.5">
+                <div class="value-display" id="separationValue">1.5</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="alignmentSlider">Alignment</label>
+                <input type="range" id="alignmentSlider" class="slider" min="0" max="3" step="0.1" value="1.0">
+                <div class="value-display" id="alignmentValue">1.0</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="cohesionSlider">Cohesion</label>
+                <input type="range" id="cohesionSlider" class="slider" min="0" max="3" step="0.1" value="1.0">
+                <div class="value-display" id="cohesionValue">1.0</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="predatorSlider">Predator Influence</label>
+                <input type="range" id="predatorSlider" class="slider" min="0" max="5" step="0.1" value="2.0">
+                <div class="value-display" id="predatorValue">2.0</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="speedSlider">Speed</label>
+                <input type="range" id="speedSlider" class="slider" min="0.5" max="4" step="0.1" value="2.0">
+                <div class="value-display" id="speedValue">2.0</div>
+            </div>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #4ECDC4;"></div>
+                <span>Prey Boids</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #FF6B6B;"></div>
+                <span>Predator Boids</span>
+            </div>
+        </div>
+        
+        <div class="canvas-container">
+            <div id="p5-canvas"></div>
+        </div>
+        
+        <div class="export-controls">
+            <button class="export-btn" onclick="exportCanvas()">📸 Export PNG</button>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let flock = [];
+        let predators = [];
+        
+        // Control variables
+        let separationWeight = 1.5;
+        let alignmentWeight = 1.0;
+        let cohesionWeight = 1.0;
+        let predatorWeight = 2.0;
+        let maxSpeed = 2.0;
+        
+        // Canvas dimensions
+        const CANVAS_WIDTH = 800;
+        const CANVAS_HEIGHT = 600;
+        
+        function setup() {
+            let canvas = createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
+            canvas.parent('p5-canvas');
+            
+            // Create prey boids
+            for (let i = 0; i < 120; i++) {
+                flock.push(new Boid(random(width), random(height), 'prey'));
+            }
+            
+            // Create predator boids
+            for (let i = 0; i < 8; i++) {
+                predators.push(new Boid(random(width), random(height), 'predator'));
+            }
+            
+            setupSliders();
+        }
+        
+        function draw() {
+            // Dynamic background with subtle animation
+            let bgColor1 = color(15, 25, 45);
+            let bgColor2 = color(25, 35, 65);
+            
+            for (let i = 0; i <= height; i++) {
+                let inter = map(i, 0, height, 0, 1);
+                let c = lerpColor(bgColor1, bgColor2, inter);
+                stroke(c);
+                line(0, i, width, i);
+            }
+            
+            // Update and display prey boids
+            for (let boid of flock) {
+                boid.flock(flock, predators);
+                boid.update();
+                boid.show();
+            }
+            
+            // Update and display predator boids
+            for (let predator of predators) {
+                predator.hunt(flock);
+                predator.flock(predators, []);
+                predator.update();
+                predator.show();
+            }
+            
+            // Add some visual flair
+            drawStats();
+        }
+        
+        function drawStats() {
+            fill(255, 255, 255, 150);
+            noStroke();
+            textAlign(LEFT);
+            textSize(12);
+            text(`Prey: ${flock.length} | Predators: ${predators.length}`, 10, 20);
+            text(`FPS: ${Math.round(frameRate())}`, 10, 35);
+        }
+        
+        class Boid {
+            constructor(x, y, type = 'prey') {
+                this.position = createVector(x, y);
+                this.velocity = p5.Vector.random2D();
+                this.acceleration = createVector(0, 0);
+                this.maxForce = 0.03;
+                this.maxSpeed = type === 'predator' ? maxSpeed * 1.2 : maxSpeed;
+                this.type = type;
+                this.size = type === 'predator' ? 8 : 5;
+                this.fear = 0; // Fear level for prey
+            }
+            
+            flock(boids, predators) {
+                if (this.type === 'prey') {
+                    let sep = this.separate(boids).mult(separationWeight);
+                    let ali = this.align(boids).mult(alignmentWeight);
+                    let coh = this.cohesion(boids).mult(cohesionWeight);
+                    let flee = this.flee(predators).mult(predatorWeight);
+                    
+                    this.acceleration.add(sep);
+                    this.acceleration.add(ali);
+                    this.acceleration.add(coh);
+                    this.acceleration.add(flee);
+                    
+                    // Update fear level based on nearby predators
+                    this.fear = this.calculateFear(predators);
+                }
+            }
+            
+            hunt(prey) {
+                if (this.type === 'predator') {
+                    let closest = null;
+                    let minDist = Infinity;
+                    
+                    for (let boid of prey) {
+                        let dist = p5.Vector.dist(this.position, boid.position);
+                        if (dist < minDist) {
+                            minDist = dist;
+                            closest = boid;
+                        }
+                    }
+                    
+                    if (closest && minDist < 100) {
+                        let seek = this.seek(closest.position);
+                        this.acceleration.add(seek.mult(1.5));
+                    }
+                }
+            }
+            
+            separate(boids) {
+                let desiredSeparation = this.type === 'predator' ? 40 : 25;
+                let steer = createVector(0, 0);
+                let count = 0;
+                
+                for (let other of boids) {
+                    let d = p5.Vector.dist(this.position, other.position);
+                    if (d > 0 && d < desiredSeparation && other.type === this.type) {
+                        let diff = p5.Vector.sub(this.position, other.position);
+                        diff.normalize();
+                        diff.div(d);
+                        steer.add(diff);
+                        count++;
+                    }
+                }
+                
+                if (count > 0) {
+                    steer.div(count);
+                    steer.normalize();
+                    steer.mult(this.maxSpeed);
+                    steer.sub(this.velocity);
+                    steer.limit(this.maxForce);
+                }
+                
+                return steer;
+            }
+            
+            align(boids) {
+                let neighborDist = 50;
+                let sum = createVector(0, 0);
+                let count = 0;
+                
+                for (let other of boids) {
+                    let d = p5.Vector.dist(this.position, other.position);
+                    if (d > 0 && d < neighborDist && other.type === this.type) {
+                        sum.add(other.velocity);
+                        count++;
+                    }
+                }
+                
+                if (count > 0) {
+                    sum.div(count);
+                    sum.normalize();
+                    sum.mult(this.maxSpeed);
+                    let steer = p5.Vector.sub(sum, this.velocity);
+                    steer.limit(this.maxForce);
+                    return steer;
+                }
+                
+                return createVector(0, 0);
+            }
+            
+            cohesion(boids) {
+                let neighborDist = 50;
+                let sum = createVector(0, 0);
+                let count = 0;
+                
+                for (let other of boids) {
+                    let d = p5.Vector.dist(this.position, other.position);
+                    if (d > 0 && d < neighborDist && other.type === this.type) {
+                        sum.add(other.position);
+                        count++;
+                    }
+                }
+                
+                if (count > 0) {
+                    sum.div(count);
+                    return this.seek(sum);
+                }
+                
+                return createVector(0, 0);
+            }
+            
+            flee(predators) {
+                let fleeRadius = 80;
+                let steer = createVector(0, 0);
+                let count = 0;
+                
+                for (let predator of predators) {
+                    let d = p5.Vector.dist(this.position, predator.position);
+                    if (d > 0 && d < fleeRadius) {
+                        let diff = p5.Vector.sub(this.position, predator.position);
+                        diff.normalize();
+                        diff.div(d);
+                        steer.add(diff);
+                        count++;
+                    }
+                }
+                
+                if (count > 0) {
+                    steer.div(count);
+                    steer.normalize();
+                    steer.mult(this.maxSpeed);
+                    steer.sub(this.velocity);
+                    steer.limit(this.maxForce * 2);
+                }
+                
+                return steer;
+            }
+            
+            seek(target) {
+                let desired = p5.Vector.sub(target, this.position);
+                desired.normalize();
+                desired.mult(this.maxSpeed);
+                
+                let steer = p5.Vector.sub(desired, this.velocity);
+                steer.limit(this.maxForce);
+                return steer;
+            }
+            
+            calculateFear(predators) {
+                let fear = 0;
+                for (let predator of predators) {
+                    let d = p5.Vector.dist(this.position, predator.position);
+                    if (d < 100) {
+                        fear += map(d, 0, 100, 1, 0);
+                    }
+                }
+                return constrain(fear, 0, 1);
+            }
+            
+            update() {
+                this.velocity.add(this.acceleration);
+                this.velocity.limit(this.maxSpeed);
+                this.position.add(this.velocity);
+                this.acceleration.mult(0);
+                
+                // Wrap around edges
+                if (this.position.x < 0) this.position.x = width;
+                if (this.position.x > width) this.position.x = 0;
+                if (this.position.y < 0) this.position.y = height;
+                if (this.position.y > height) this.position.y = 0;
+            }
+            
+            show() {
+                let theta = this.velocity.heading() + PI / 2;
+                
+                push();
+                translate(this.position.x, this.position.y);
+                rotate(theta);
+                
+                if (this.type === 'predator') {
+                    // Predator appearance
+                    fill(255, 107, 107, 200);
+                    stroke(255, 50, 50);
+                    strokeWeight(1);
+                    
+                    // Larger, more menacing triangle
+                    beginShape();
+                    vertex(0, -this.size * 1.5);
+                    vertex(-this.size, this.size);
+                    vertex(this.size, this.size);
+                    endShape(CLOSE);
+                    
+                    // Add eyes
+                    fill(255, 0, 0);
+                    noStroke();
+                    ellipse(-2, -2, 2, 2);
+                    ellipse(2, -2, 2, 2);
+                } else {
+                    // Prey appearance with fear-based coloring
+                    let baseColor = color(78, 205, 196);
+                    let fearColor = color(255, 255, 100);
+                    let currentColor = lerpColor(baseColor, fearColor, this.fear);
+                    
+                    fill(red(currentColor), green(currentColor), blue(currentColor), 180);
+                    stroke(255, 255, 255, 100);
+                    strokeWeight(0.5);
+                    
+                    // Triangle shape
+                    beginShape();
+                    vertex(0, -this.size);
+                    vertex(-this.size * 0.7, this.size * 0.7);
+                    vertex(this.size * 0.7, this.size * 0.7);
+                    endShape(CLOSE);
+                    
+                    // Add a small trail effect when afraid
+                    if (this.fear > 0.3) {
+                        stroke(red(currentColor), green(currentColor), blue(currentColor), 50);
+                        strokeWeight(2);
+                        line(0, this.size, 0, this.size + this.fear * 10);
+                    }
+                }
+                
+                pop();
+            }
+        }
+        
+        function setupSliders() {
+            // Separation slider
+            document.getElementById('separationSlider').addEventListener('input', function(e) {
+                separationWeight = parseFloat(e.target.value);
+                document.getElementById('separationValue').textContent = separationWeight.toFixed(1);
+            });
+            
+            // Alignment slider
+            document.getElementById('alignmentSlider').addEventListener('input', function(e) {
+                alignmentWeight = parseFloat(e.target.value);
+                document.getElementById('alignmentValue').textContent = alignmentWeight.toFixed(1);
+            });
+            
+            // Cohesion slider
+            document.getElementById('cohesionSlider').addEventListener('input', function(e) {
+                cohesionWeight = parseFloat(e.target.value);
+                document.getElementById('cohesionValue').textContent = cohesionWeight.toFixed(1);
+            });
+            
+            // Predator slider
+            document.getElementById('predatorSlider').addEventListener('input', function(e) {
+                predatorWeight = parseFloat(e.target.value);
+                document.getElementById('predatorValue').textContent = predatorWeight.toFixed(1);
+            });
+            
+            // Speed slider
+            document.getElementById('speedSlider').addEventListener('input', function(e) {
+                maxSpeed = parseFloat(e.target.value);
+                document.getElementById('speedValue').textContent = maxSpeed.toFixed(1);
+                
+                // Update all boids' max speed
+                for (let boid of flock) {
+                    boid.maxSpeed = maxSpeed;
+                }
+                for (let predator of predators) {
+                    predator.maxSpeed = maxSpeed * 1.2;
+                }
+            });
+        }
+        
+        function exportCanvas() {
+            saveCanvas('boids-flocking-' + Date.now(), 'png');
+        }
+        
+        // Add some interactivity - click to add more boids
+        function mousePressed() {
+            if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
+                if (keyIsPressed && key === 'p') {
+                    // Add predator with 'p' key held
+                    predators.push(new Boid(mouseX, mouseY, 'predator'));
+                } else {
+                    // Add prey boid
+                    flock.push(new Boid(mouseX, mouseY, 'prey'));
+                }
+            }
+        }
+    </script>
+</body>
+</html>
