@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2D Boids Flocking with Predator-Prey Dynamics</title>
+    <meta name="description" content="Interactive p5.js simulation of boids flocking, emergent behaviour, and predator-prey steering dynamics.">
+    <meta name="theme-color" content="#1e3c72">
+    <title>Flock Emerge | Boids Predator-Prey Simulation</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
     <style>
         body {
@@ -21,8 +23,16 @@
         
         h1 {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 8px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .subtitle {
+            max-width: 760px;
+            margin: 0 auto 20px auto;
+            text-align: center;
+            color: rgba(255,255,255,0.86);
+            line-height: 1.55;
         }
         
         .controls {
@@ -94,6 +104,10 @@
         .export-controls {
             text-align: center;
             margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
         }
         
         .export-btn {
@@ -111,6 +125,11 @@
         .export-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .secondary-btn {
+            background: rgba(255,255,255,0.14);
+            border: 1px solid rgba(255,255,255,0.3);
         }
         
         .legend {
@@ -133,11 +152,33 @@
             border-radius: 50%;
             border: 2px solid white;
         }
+
+        .instructions {
+            max-width: 800px;
+            margin: 20px auto 0;
+            padding: 14px 18px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.9);
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .instructions kbd {
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(0,0,0,0.35);
+            border: 1px solid rgba(255,255,255,0.25);
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🐦 2D Boids Flocking with Predator-Prey Dynamics</h1>
+        <h1>Flock Emerge</h1>
+        <p class="subtitle">
+            A real-time agent-based simulation showing how simple local steering rules
+            create complex flocking behaviour under predator pressure.
+        </p>
         
         <div class="controls">
             <div class="control-group">
@@ -187,7 +228,15 @@
         </div>
         
         <div class="export-controls">
+            <button class="export-btn secondary-btn" onclick="togglePause()">⏯ Pause / Resume</button>
+            <button class="export-btn secondary-btn" onclick="resetSimulation()">🔄 Reset</button>
+            <button class="export-btn secondary-btn" onclick="randomizeSettings()">🎛 Randomize</button>
             <button class="export-btn" onclick="exportCanvas()">📸 Export PNG</button>
+        </div>
+
+        <div class="instructions">
+            Click inside the simulation to add a prey boid. Hold <kbd>P</kbd> while clicking to add a predator.
+            Use the sliders to tune separation, alignment, cohesion, predator influence, and speed in real time.
         </div>
     </div>
 
@@ -195,6 +244,7 @@
         // Global variables
         let flock = [];
         let predators = [];
+        let isPaused = false;
         
         // Control variables
         let separationWeight = 1.5;
@@ -206,25 +256,23 @@
         // Canvas dimensions
         const CANVAS_WIDTH = 800;
         const CANVAS_HEIGHT = 600;
+        const INITIAL_PREY_COUNT = 120;
+        const INITIAL_PREDATOR_COUNT = 8;
         
         function setup() {
             let canvas = createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
             canvas.parent('p5-canvas');
             
-            // Create prey boids
-            for (let i = 0; i < 120; i++) {
-                flock.push(new Boid(random(width), random(height), 'prey'));
-            }
-            
-            // Create predator boids
-            for (let i = 0; i < 8; i++) {
-                predators.push(new Boid(random(width), random(height), 'predator'));
-            }
-            
+            resetSimulation();
             setupSliders();
         }
         
         function draw() {
+            if (isPaused) {
+                drawStats();
+                return;
+            }
+
             // Dynamic background with subtle animation
             let bgColor1 = color(15, 25, 45);
             let bgColor2 = color(25, 35, 65);
@@ -262,6 +310,9 @@
             textSize(12);
             text(`Prey: ${flock.length} | Predators: ${predators.length}`, 10, 20);
             text(`FPS: ${Math.round(frameRate())}`, 10, 35);
+            if (isPaused) {
+                text('Paused', 10, 50);
+            }
         }
         
         class Boid {
@@ -543,6 +594,49 @@
         
         function exportCanvas() {
             saveCanvas('boids-flocking-' + Date.now(), 'png');
+        }
+
+        function togglePause() {
+            isPaused = !isPaused;
+        }
+
+        function resetSimulation() {
+            flock = [];
+            predators = [];
+
+            for (let i = 0; i < INITIAL_PREY_COUNT; i++) {
+                flock.push(new Boid(random(width), random(height), 'prey'));
+            }
+
+            for (let i = 0; i < INITIAL_PREDATOR_COUNT; i++) {
+                predators.push(new Boid(random(width), random(height), 'predator'));
+            }
+        }
+
+        function randomizeSettings() {
+            separationWeight = random(0.8, 2.6);
+            alignmentWeight = random(0.4, 2.2);
+            cohesionWeight = random(0.4, 2.2);
+            predatorWeight = random(1.0, 4.5);
+            maxSpeed = random(1.0, 3.5);
+
+            updateSlider('separationSlider', 'separationValue', separationWeight);
+            updateSlider('alignmentSlider', 'alignmentValue', alignmentWeight);
+            updateSlider('cohesionSlider', 'cohesionValue', cohesionWeight);
+            updateSlider('predatorSlider', 'predatorValue', predatorWeight);
+            updateSlider('speedSlider', 'speedValue', maxSpeed);
+
+            for (let boid of flock) {
+                boid.maxSpeed = maxSpeed;
+            }
+            for (let predator of predators) {
+                predator.maxSpeed = maxSpeed * 1.2;
+            }
+        }
+
+        function updateSlider(sliderId, valueId, value) {
+            document.getElementById(sliderId).value = value.toFixed(1);
+            document.getElementById(valueId).textContent = value.toFixed(1);
         }
         
         // Add some interactivity - click to add more boids

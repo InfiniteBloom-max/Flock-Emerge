@@ -1,0 +1,15 @@
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Editor folders
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.log
+
+# Generated media exports
+boids-flocking-*.png
+
