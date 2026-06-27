@@ -1,17 +1,33 @@
-# Flock Emerge
+<div align="center">
 
-> A real-time agent-based simulation of emergent flocking behaviour with predator-prey steering dynamics.
+# Flock Emerge
 
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES6-F7DF1E?logo=javascript&logoColor=000)
 ![p5.js](https://img.shields.io/badge/p5.js-1.7.0-ED225D?logo=p5dotjs&logoColor=white)
 ![Canvas](https://img.shields.io/badge/Rendering-HTML5_Canvas-E34F26?logo=html5&logoColor=white)
 ![Status](https://img.shields.io/badge/status-interactive_demo-2ea44f)
 
+**A real-time agent-based simulation of emergent flocking behaviour with predator-prey steering dynamics.**
+
+![Flock Emerge animated simulation preview](docs/images/flock-emerge-demo.gif)
+
+[Live Demo](https://infinitebloom-max.github.io/Flock-Emerge/) · [Algorithm](#algorithm) · [Controls](#controls) · [Roadmap](#roadmap)
+
+</div>
+
 ## Overview
 
 **Flock Emerge** is an interactive browser simulation based on Craig Reynolds' Boids algorithm. Each boid follows a small set of local steering rules, yet the group produces coordinated movement that resembles natural flocking, schooling, and swarm behaviour.
 
 The project extends the classic boids model with a predator-prey layer: prey agents flock together while reacting to nearby predator agents, and predators pursue the closest prey within range. The result is a compact visual demonstration of how simple rules can produce complex emergent behaviour.
+
+## Preview
+
+![Flock Emerge browser interface screenshot](docs/images/flock-emerge-preview.png)
+
+## Why This Project Matters
+
+Flocking is a classic example of **emergence**: complex system-level behaviour created by simple local rules. This project translates that idea into an interactive simulation where parameters can be tuned live, making it useful as a compact demonstration of agent-based modelling, AI-adjacent simulation logic, and visual systems thinking.
 
 ## Key Features
 
@@ -100,8 +116,13 @@ The simulation uses vector-based movement:
 
 ```text
 Flock-Emerge/
+├── docs/
+│   └── images/
+│       ├── flock-emerge-demo.gif
+│       └── flock-emerge-preview.png
 ├── index.html   # Simulation, UI, and p5.js logic
-└── README.md    # Project documentation
+├── LICENSE
+└── README.md
 ```
 
 ## Engineering Notes
@@ -113,15 +134,16 @@ This project demonstrates:
 - Steering behaviours and vector math.
 - Real-time interactive simulation.
 - Lightweight front-end prototyping without a build pipeline.
+- Communicating technical work clearly through visual documentation.
 
 ## Roadmap
 
 - [ ] Split simulation logic into separate JavaScript modules.
 - [ ] Add simulation presets such as calm flock, panic, predator swarm, and high-density crowding.
 - [x] Add pause/resume and reset controls.
+- [x] Add screenshots and animated GIF preview.
 - [ ] Add mobile-friendly canvas scaling.
-- [ ] Add screenshots or a short demo GIF to the repository.
-- [ ] Deploy with GitHub Pages.
+- [x] Deploy with GitHub Pages.
 
 ## Author
 
